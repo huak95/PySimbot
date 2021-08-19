@@ -14,55 +14,85 @@ Config.set('kivy', 'log_level', 'info')
 
 # update robot every 0.5 seconds (2 frames per sec)
 # REFRESH_INTERVAL = 1/5
-REFRESH_INTERVAL = 1/10
+REFRESH_INTERVAL = 1/30
 
 _count_lim = 0 
 _count_set = 0
 _ro = 1
 _count_stuck = 0
 _count_hold = 8
+_sum_dist = 0
+_sum_dist_pre = 0
+_struct = 0
+SENSOR = [0]*8
+smell_dis =0 
 
 class MyRobot(Robot):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.count = 0
+        self.safety_dist = 25
+        self.closed_dist = 6
+        self.hitted_dist = 0
 
     def update(self):
-        global _count_lim, _count_set, _ro, _count_stuck, _count_hold
+        global _count_lim, _count_set, _ro, _count_stuck, _count_hold, _sum_dist, _sum_dist_pre, _struct, SENSOR, smell_dis
+
+        _sum_dist_pre = round(sum(self.distance()),0)
+
         # print("Count: {0}".format(_count))
         Logger.info("Smell Angle: {0}".format(self.smell()))
         Logger.info("Distance: {0}".format(self.distance()))
         print("Count_lim:" + str(_count_lim) + " count_set:" + str(_count_set))
-        print("ro:" + str(_ro) + " Struck:" + str(_count_stuck))
+        print("_struct " + str(_struct))
+        print("_sum_dist_pre " + str(_sum_dist_pre) + " _sum_dist " + str(_sum_dist))
+        print("ro:" + str(_ro) + " _count_stuck:" + str(_count_stuck))
+        print("smell_dis: {0}".format(self.smell_nearest()))
         # print(self.distance()[0])
-
+        smell_dis = self.smell_nearest()
+        SENSOR = self.distance()
+        
         _count_lim = _count_lim + 1  
-        
-        if (self.distance()[0] >= 5 and self.distance()[1] >= 5 and self.distance()[2] >= 5 and self.distance()[-1] >= 5 and self.distance()[-2] >= 5):
-            if (_count_lim >= _count_hold):
-                _count_lim = 0
-                _count_set = _count_set + 1
-                if _count_set < 3:
-                    self.turn(self.smell())
-            self.move(10)
-        
-            elif (_count_set == 6):
-                _ro = _ro * -1
-                _count_set = _count_set + 1
 
-            elif (_count_set >= 10):
-                self.move(-20)
-                self.turn(10)
-                _count_set = 0
-            else:
-                self.move(-10)
-                self.turn(30* _ro)
-                self.move(10)
+        if _sum_dist_pre == _sum_dist:
+            _struct = 1
+            _count_stuck = _count_stuck + 1
         else:
-            self.move(-10)
-            self.turn(30* _ro)
+            _struct = 0
+        
+        if (SENSOR[0] >= self.safety_dist and SENSOR[1] >= self.safety_dist and SENSOR[-1] >= self.safety_dist):
+            self.move(4)
+            if self.smell()>0:
+                self.turn(15)
+            else:
+                self.turn(-15)
+
+        elif(SENSOR[0] >= self.safety_dist and SENSOR[1] >= self.closed_dist and SENSOR[-1] >= self.closed_dist):
             self.move(10)
+
+        elif(SENSOR[0] >= self.safety_dist and (SENSOR[1] < self.closed_dist) or (SENSOR[-1] < self.closed_dist)):
+            if (SENSOR[1]<SENSOR[-1]):
+                self.turn(-4)
+            elif(SENSOR[1]>SENSOR[-1]):
+                self.turn(4)
+
+        if(SENSOR[0] < self.safety_dist):
+            self.turn(4*_ro)
+
+        _sum_dist = _sum_dist + smell_dis
+        if _count_lim%3 == 0:
+           _sum_dist = 0
+                   
+        # _sum_dist = round(sum(SENSOR),0)      
+
+        # if (_count_stuck > 10):
+        #     _ro = _ro * -1
+        #     self.move(-5)
+        #     self.turn(10)
+        #     self.turn(10)
+        #     self.turn(10)
+        #     _count_stuck = 0
+        
 
 if __name__ == '__main__':
     app = PySimbotApp(robot_cls=MyRobot, num_robots=1, interval=REFRESH_INTERVAL, enable_wasd_control=True)
