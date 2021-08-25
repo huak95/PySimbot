@@ -31,8 +31,8 @@ class MyRobot(Robot):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.safety_dist = 25
-        self.closed_dist = 6
+        self.safety_dist = 30
+        self.closed_dist = 5
         self.hitted_dist = 0
 
     def update(self):
@@ -83,15 +83,15 @@ class MyRobot(Robot):
         if _count_lim%3 == 0:
            _sum_dist = 0
                    
-        # _sum_dist = round(sum(SENSOR),0)      
+        _sum_dist = round(sum(SENSOR),0)      
 
-        # if (_count_stuck > 10):
-        #     _ro = _ro * -1
-        #     self.move(-5)
-        #     self.turn(10)
-        #     self.turn(10)
-        #     self.turn(10)
-        #     _count_stuck = 0
+        if (_count_stuck > 10):
+            _ro = _ro * -1
+            self.move(-5)
+            self.turn(10)
+            self.turn(10)
+            self.turn(10)
+            _count_stuck = 0
         
 
 if __name__ == '__main__':

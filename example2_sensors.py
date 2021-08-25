@@ -21,5 +21,5 @@ class MyRobot(Robot):
         Logger.info("Distance: {0}".format(self.distance()))
 
 if __name__ == '__main__':
-    app = PySimbotApp(robot_cls=MyRobot, num_robots=1, interval=REFRESH_INTERVAL, enable_wasd_control=True)
+    app = PySimbotApp(robot_cls=MyRobot, num_robots=1, interval=REFRESH_INTERVAL, enable_wasd_control=True,save_wasd_history=True)
     app.run()
