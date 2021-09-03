@@ -71,7 +71,7 @@ class MyRobot(Robot):
 
         self.ir_dis_var = 10
 
-        self.MASTER_RULE()        
+        self.OAC()
         # if (self.ir_values[-2]<=self.ir_dis_var or self.ir_values[-1]<=self.ir_dis_var or self.ir_values[0]<=self.ir_dis_var or self.ir_values[1]<=self.ir_dis_var or self.ir_values[2]<=self.ir_dis_var) :
         #     # print("Object Avoidance Mode!")
         #     self.OAC()
@@ -135,8 +135,6 @@ class MyRobot(Robot):
         turns.append(-10)
         
         self.ARR = np.array([self.close_ir(-2), self.near_ir(-1), self.near_ir(0)])
-        # # print("ARR: {0}".format(self.ARR))
-        # # print("max: {0}".format(np.amax(self.ARR)))
         rules.append(np.amax(self.ARR))
         moves.append(5)
         turns.append(20)
@@ -157,70 +155,6 @@ class MyRobot(Robot):
         for r, t, m in zip(rules, turns, moves):
             ans_turn += t * r
             ans_move += m * r
-
-    def MASTER_RULE(self):
-        # initial list of rules
-        rules = list()
-        turns = list()
-        moves = list()
-        # __________IR RULE__________
-        self.ARR = np.array([self.close_ir(-2), self.close_ir(-1), self.close_ir(0)])        
-        rules.append(np.amax(self.ARR))
-        moves.append(0)
-        turns.append(10)
-
-        self.ARR = np.array([self.close_ir(0), self.close_ir(1) , self.close_ir(2)])
-        rules.append(np.amax(self.ARR))
-        moves.append(0)
-        turns.append(-10)
-        
-        self.ARR = np.array([self.close_ir(-2), self.near_ir(-1), self.near_ir(0)])
-        # # print("ARR: {0}".format(self.ARR))
-        # # print("max: {0}".format(np.amax(self.ARR)))
-        rules.append(np.amax(self.ARR))
-        moves.append(0)
-        turns.append(20)
-
-        self.ARR = np.array([self.close_ir(2), self.near_ir(1), self.near_ir(0)])
-        rules.append(np.amax(self.ARR))
-        moves.append(0)
-        turns.append(-20)
-
-        self.ARR = np.array([self.far_ir(-2), self.far_ir(-1), self.far_ir(0), self.far_ir(1), self.far_ir(2)])
-        rules.append(np.amax(self.ARR))
-        moves.append(-5)
-        turns.append(0)
-
-        # __________FOOD RULE__________
-        rules.append(self.food_dis_zero() * 1.0)
-        moves.append(0)
-        turns.append(0)
-
-        rules.append(self.food_dis_near() * self.food_angle_center())
-        moves.append(10)
-        turns.append(0)
-
-        rules.append(self.food_dis_far() * self.food_angle_center())
-        moves.append(10)
-        turns.append(0)
-
-        rules.append(1.0 * self.food_angle_left())
-        moves.append(0)
-        turns.append(-20)
-
-        rules.append(1.0 * self.food_angle_right())
-        moves.append(0)
-        turns.append(20)
-        ans_turn = 0.0
-        ans_move = 0.0
-
-        for r, t, m in zip(rules, turns, moves):
-            ans_turn += t * r
-            ans_move += m * r
-
-        print("ans_turn: {0} ans_move: {0}".format(ans_turn, ans_move))
-        self.turn_s(int(ans_turn))
-        self.move_s(int(ans_move))
 
     def food_dis_zero(self):
         self.x1 = 50.0

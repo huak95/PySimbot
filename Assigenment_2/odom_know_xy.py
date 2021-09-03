@@ -16,7 +16,7 @@ import time
 odom = np.array([(20, 20, 0),(20, 20, 0)]) # x, y, seta
 odom_save = np.array([20, 20, 46.73570458892837]) # x, y, food_seta
 odom_count = 0
-count = 0
+globcount = 0
 
 # Force the program to show user's log only for "info" level or more. The info log will be disabled.
 Config.set('kivy', 'log_level', 'info')
@@ -60,6 +60,27 @@ class MyRobot(Robot):
         if count == 0:
             print(self.food_finding_mode_x())
         
+        # initial list of rules
+        rules = list()
+        turns = list()
+        moves = list()
+
+        # __________IR RULE__________
+        rules.append(self.far_ir(0))
+        turns.append(0)
+        moves.append(10)
+
+        rules.append(self.near_ir(0))
+        turns.append(15)
+        moves.append(-3)
+
+        rules.append(self.near_ir(1) * self.near_ir(2))
+        turns.append(-15)
+        moves.append(0)       
+
+        rules.append(self.near_ir(-1) * self.near_ir(-2))
+        turns.append(15)
+        moves.append(0)
 
         count += 1
 

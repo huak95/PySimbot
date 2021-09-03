@@ -17,6 +17,7 @@ REFRESH_INTERVAL = 1/2
 class MyRobot(Robot):
     
     def update(self):
+        self.turn(0.006539995598517281)
         Logger.info("Smell Angle: {0}".format(self.smell()))
         Logger.info("Distance: {0}".format(self.distance()))
 
