@@ -69,15 +69,9 @@ class MyRobot(Robot):
         food_dis = self.food_len()
         # print("food_dis: {0}".format(food_dis))
 
-        self.ir_dis_var = 10
+        self.ir_dis_var = 5
 
-        self.OAC()
-        # if (self.ir_values[-2]<=self.ir_dis_var or self.ir_values[-1]<=self.ir_dis_var or self.ir_values[0]<=self.ir_dis_var or self.ir_values[1]<=self.ir_dis_var or self.ir_values[2]<=self.ir_dis_var) :
-        #     # print("Object Avoidance Mode!")
-        #     self.OAC()
-        # else:
-        #     # print("Food Finding Mode!")
-        #     self.FLC()              
+        self.FLC()  
 
         count += 1
 
@@ -86,26 +80,48 @@ class MyRobot(Robot):
         rules = list()
         turns = list()
         moves = list()
+
         # __________FOOD RULE__________
-        rules.append(self.food_dis_zero() * 1.0)
-        moves.append(0)
-        turns.append(0)
+        # rules.append(self.food_dis_zero() * 1.0)
+        # moves.append(0)
+        # turns.append(0)
 
-        rules.append(self.food_dis_near() * self.food_angle_center())
-        moves.append(10)
-        turns.append(0)
+        # rules.append(self.food_dis_near() * self.food_angle_center())
+        # moves.append(10)
+        # turns.append(0)
 
-        rules.append(self.food_dis_far() * self.food_angle_center())
-        moves.append(10)
-        turns.append(0)
+        # rules.append(self.food_dis_far() * self.food_angle_center())
+        # moves.append(20)
+        # turns.append(0)
 
-        rules.append(1.0 * self.food_angle_left())
+        rules.append(1.0 * self.food_angle_left() * self.near_ir(0) * self.near_ir(-2) * self.near_ir(2))
         moves.append(0)
         turns.append(-20)
 
-        rules.append(1.0 * self.food_angle_right())
+        rules.append(1.0 * self.food_angle_right() * self.near_ir(0) * self.near_ir(-2) * self.near_ir(2))
         moves.append(0)
         turns.append(20)
+
+        # __________IR RULE__________
+        rules.append(self.close_ir(-2) * self.close_ir(-1)* self.close_ir(0))
+        moves.append(5)
+        turns.append(50)
+
+        rules.append(self.close_ir(0)* self.close_ir(1) * self.close_ir(2))
+        moves.append(-5)
+        turns.append(-80)
+        
+        rules.append(self.close_ir(-2)* self.near_ir(-1)* self.near_ir(0))
+        moves.append(5)
+        turns.append(100)
+
+        rules.append(self.close_ir(2) * self.near_ir(1)* self.near_ir(0))
+        moves.append(-5)
+        turns.append(-100)
+
+        rules.append(self.far_ir(-2) * self.far_ir(-1)* self.far_ir(0)* self.far_ir(1)* self.far_ir(2))
+        moves.append(-10)
+        turns.append(0)
 
         ans_turn = 0.0
         ans_move = 0.0
@@ -114,47 +130,8 @@ class MyRobot(Robot):
             ans_turn += t * r
             ans_move += m * r
 
-        # print("ans_turn: {0} \t ans_move: {1}".format(ans_turn, ans_move))
         self.turn_s(int(ans_turn))
         self.move_s(int(ans_move))
-
-    def OAC(self):
-        # initial list of rules
-        rules = list()
-        turns = list()
-        moves = list()
-        # __________IR RULE__________
-        self.ARR = np.array([self.close_ir(-2), self.close_ir(-1), self.close_ir(0)])        
-        rules.append(np.amax(self.ARR))
-        moves.append(5)
-        turns.append(10)
-
-        self.ARR = np.array([self.close_ir(0), self.close_ir(1) , self.close_ir(2)])
-        rules.append(np.amax(self.ARR))
-        moves.append(-5)
-        turns.append(-10)
-        
-        self.ARR = np.array([self.close_ir(-2), self.near_ir(-1), self.near_ir(0)])
-        rules.append(np.amax(self.ARR))
-        moves.append(5)
-        turns.append(20)
-
-        self.ARR = np.array([self.close_ir(2), self.near_ir(1), self.near_ir(0)])
-        rules.append(np.amax(self.ARR))
-        moves.append(-5)
-        turns.append(-20)
-
-        self.ARR = np.array([self.far_ir(-2), self.far_ir(-1), self.far_ir(0), self.far_ir(1), self.far_ir(2)])
-        rules.append(np.amax(self.ARR))
-        moves.append(-20)
-        turns.append(0)
-
-        ans_turn = 0.0
-        ans_move = 0.0
-
-        for r, t, m in zip(rules, turns, moves):
-            ans_turn += t * r
-            ans_move += m * r
 
     def food_dis_zero(self):
         self.x1 = 50.0
@@ -238,8 +215,6 @@ class MyRobot(Robot):
             return 0.0
         elif self.ir > self.x1 and self.ir < self.x2:
             return (self.ir-self.x1)/(self.x2-self.x1)
-        elif self.ir == self.x2:
-            return 1.0
         elif self.ir >= self.x2 and self.ir < self.x3:
             return 1.0 - (self.ir-self.x2)/(self.x3-self.x2)
         else:

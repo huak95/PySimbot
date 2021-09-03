@@ -76,7 +76,7 @@ class MyRobot(Robot):
 
         rules.append(self.near_ir(1) * self.near_ir(2))
         turns.append(-15)
-        moves.append(0)       
+        moves.append(0)
 
         rules.append(self.near_ir(-1) * self.near_ir(-2))
         turns.append(15)
