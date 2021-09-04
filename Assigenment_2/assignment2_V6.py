@@ -19,7 +19,7 @@ Config.set('kivy', 'log_level', 'info')
 START_POINT = (20, 560)
 
 # update robot every 0.5 seconds (2 frames per sec)
-REFRESH_INTERVAL = 1/10
+REFRESH_INTERVAL = 1/15
 count = 1
 rotage_var = 1
 count_struck = 0
@@ -36,7 +36,7 @@ class MyRobot(Robot):
         '''        
         self.ir_values = self.distance()
         self.target = self.smell()
-        # Logger.info("Distance: {0}".format(self.distance()))
+        Logger.info("Distance: {0}".format(self.distance()))
         Logger.info("Stuck: {0}".format(self.stuck))
 
         # initial list of rules
@@ -65,15 +65,11 @@ class MyRobot(Robot):
 
         rules.append(self.near_ir(0) * self.near_ir(-1) * self.near_ir(1))
         moves.append(-8)
-        turns.append(0)
+        turns.append(5)
 
-        # rules.append(self.stuck * self.mid_ir(4))
-        # moves.append(-30)
-        # turns.append(0)
-
-        # rules.append(self.stuck * self.near_ir(0))
-        # moves.append(0)
-        # turns.append(180)
+        rules.append(self.stuck * np.max([self.mid_ir(0), self.mid_ir(1),self.mid_ir(-1)]) )
+        moves.append(0)
+        turns.append(180)
 
         # back sensor
         rules.append(self.near_ir(3) * self.near_ir(4) * self.near_ir(5) * self.far_ir(0))
@@ -116,12 +112,21 @@ class MyRobot(Robot):
         rules.append(self.smell_right() * self.far_ir(0) * np.min([self.far_ir(-2), self.far_ir(2)]))
         moves.append(0)
         turns.append(15)
+        
+        rules.append(self.smell_back() * self.far_ir(4) * self.far_ir(0))
+        moves.append(0)
+        turns.append(180)
 
         # ________FIX STRUCK_______
-        # if count % 20 == 0:
+        if count % 20 == 0:
+            rules.append(0.5)
+            moves.append(-3)
+            turns.append(10)
+
+        # if count % 120 == 0:
         #     rules.append(1.0)
-        #     moves.append(0)
-        #     turns.append(15)
+        #     moves.append(-5)
+        #     turns.append(-120)
             # turns.append(10*rotage_var)
             # count_struck += 1
 
@@ -150,7 +155,7 @@ class MyRobot(Robot):
             self.x2 = 40.0
         else:
             self.x1 = 14.0
-            self.x2 = 36.0
+            self.x2 = 30.0
 
         if self.ir <= self.x1:
             return 1.0
@@ -203,7 +208,14 @@ class MyRobot(Robot):
         else:
             return -target / 90.0
 
- 
+    def smell_back(self):
+        target = self.smell()
+        if target >= -135:
+            return 0.0
+        elif target <= -180:
+            return 1.0
+        else:
+            return 1.0 - (target / 45.0)
 
 if __name__ == '__main__':
     app = PySimbotApp(map="default", robot_cls=MyRobot, num_robots=1, interval=REFRESH_INTERVAL, enable_wasd_control=True,save_wasd_history=True)
