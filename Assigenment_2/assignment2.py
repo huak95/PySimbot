@@ -1,32 +1,30 @@
 #!/usr/bin/python3
 
-import os, sys
-import random
+import os, platform
 
-from pysimbotlib.Window import PySimbotApp
-from pysimbotlib.Robot import Robot
-from kivy.core.window import Window
+from kivy.app import App
+from numpy.core.defchararray import count
+if platform.system() == "Linux" or platform.system() == "Darwin":
+    os.environ["KIVY_VIDEO"] = "ffpyplayer"
+
+from pysimbotlib.core import PySimbotApp, Robot, Simbot
 from kivy.logger import Logger
+from kivy.config import Config
+import numpy as np
+import time
 
-# Number of robot that will be run
-ROBOT_NUM = 1
-
-# Delay between update (default: 1/60 (or 60 frame per sec))
-TIME_INTERVAL = 1.0/60 #10frame per second 
-
-# Max tick
-MAX_TICK = 5000
-
+# Force the program to show user's log only for "info" level or more. The info log will be disabled.
+Config.set('kivy', 'log_level', 'info')
 # START POINT
 START_POINT = (20, 560)
 
-# Map file
-MAP_FILE = 'maps/default_map.kv'
+# update robot every 0.5 seconds (2 frames per sec)
+REFRESH_INTERVAL = 1/10
 
-class FuzzyRobot(Robot):
+class MyRobot(Robot):
 
     def __init__(self):
-        super(FuzzyRobot, self).__init__()
+        super(MyRobot, self).__init__()
         self.pos = START_POINT
 
     def update(self):
@@ -40,19 +38,32 @@ class FuzzyRobot(Robot):
         turns = list()
         moves = list()
 
-        # rule 0
         rules.append(self.front_far() * self.left_far() * self.right_far())
         turns.append(0)
         moves.append(10)
 
-        # rule 1
+        rules.append(self.front_near() * self.left_near() * self.right_near())
+        turns.append(0)
+        moves.append(-10)
+
+        rules.append(self.front_near() * self.left_near() * self.right_far())
+        turns.append(60)
+        moves.append(0)        
+        
+        rules.append(self.front_near() * self.left_far() * self.right_near())
+        turns.append(-60)
+        moves.append(0)
+
+        rules.append(self.smell_center() * self.front_far())
+        turns.append(0)
+        moves.append(10)
+
         rules.append(self.smell_left() * self.front_far() * self.left_far() * self.right_far())
-        turns.append(-80)
+        turns.append(-45)
         moves.append(5)
 
-        # rule 2
         rules.append(self.smell_right() * self.front_far() * self.left_far() * self.right_far())
-        turns.append(100)
+        turns.append(60)
         moves.append(5)
 
         ans_turn = 0.0
@@ -74,7 +85,7 @@ class FuzzyRobot(Robot):
             return (irfront-10.0) / 30.0
     
     def front_near(self):
-        return 1 - self.front_far()
+        return 1.0 - self.front_far()
 
     def left_far(self):
         irleft = self.ir_values[6]
@@ -112,11 +123,11 @@ class FuzzyRobot(Robot):
     def smell_center(self):
         target = abs(self.smell())
         if target >= 45:
-            return 1.0
-        elif target <= 0:
             return 0.0
+        elif target <= 0:
+            return 1.0
         else:
-            return target / 45.0
+            return 1.0 - (target / 45.0)
 
     def smell_left(self):
         target = self.smell()
@@ -128,5 +139,5 @@ class FuzzyRobot(Robot):
             return -target / 90.0
 
 if __name__ == '__main__':
-    app = PySimbotApp(FuzzyRobot, ROBOT_NUM, mapPath=MAP_FILE, interval=TIME_INTERVAL, maxtick=MAX_TICK)
+    app = PySimbotApp(map="default", robot_cls=MyRobot, num_robots=1, interval=REFRESH_INTERVAL, enable_wasd_control=True,save_wasd_history=True)
     app.run()
